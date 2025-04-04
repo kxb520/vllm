@@ -135,9 +135,9 @@ class Worker(LocalOrDistributedWorkerBase):
             "%.2f GiB memory is still in use.", freed_bytes / GiB_bytes,
             used_bytes / GiB_bytes)
 
-    def wake_up(self, tags: Optional[list[str]] = None) -> None:
+    def wake_up(self) -> None:
         allocator = CuMemAllocator.get_instance()
-        allocator.wake_up(tags=tags)
+        allocator.wake_up()
 
     def init_device(self) -> None:
         if self.device_config.device.type == "cuda":

@@ -15,7 +15,6 @@ import torch
 from torch.distributed import ProcessGroup, TCPStore
 from torch.distributed.distributed_c10d import (Backend, PrefixStore,
                                                 _get_default_timeout,
-                                                _unregister_process_group,
                                                 is_nccl_available)
 from torch.distributed.rendezvous import rendezvous
 
@@ -207,7 +206,10 @@ class StatelessProcessGroup:
     def barrier(self):
         """A barrier to synchronize all ranks."""
         for i in range(self.world_size):
-            self.broadcast_obj(None, src=i)
+            if i == self.rank:
+                self.broadcast_obj(None, src=self.rank)
+            else:
+                self.broadcast_obj(None, src=i)
 
     @staticmethod
     def create(
@@ -331,15 +333,3 @@ def stateless_init_torch_distributed_process_group(
     pg._register_backend(device, backend_type, backend_class)
 
     return pg
-
-
-def stateless_destroy_torch_distributed_process_group(
-        pg: ProcessGroup) -> None:
-    """
-    Destroy ProcessGroup returned by
-        stateless_init_torch_distributed_process_group().
-    """
-    # Lazy import for non-CUDA backends.
-    from torch.distributed.distributed_c10d import _shutdown_backend
-    _shutdown_backend(pg)
-    _unregister_process_group(pg.group_name)

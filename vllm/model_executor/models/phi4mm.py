@@ -28,7 +28,7 @@ from vllm.model_executor.models.llama import LlamaModel
 from vllm.model_executor.models.module_mapping import MultiModelKeys
 from vllm.model_executor.sampling_metadata import SamplingMetadata
 from vllm.multimodal import MULTIMODAL_REGISTRY
-from vllm.multimodal.inputs import MultiModalKwargs, NestedTensors
+from vllm.multimodal.inputs import MultiModalInputs, NestedTensors
 from vllm.sequence import IntermediateTensors, SequenceData
 from vllm.transformers_utils.tokenizer import cached_tokenizer_from_config
 
@@ -1319,9 +1319,9 @@ def dummy_data_for_phi4mm(ctx: InputContext, seq_len: int,
 
 
 def input_mapper_for_phi4mm_audio(ctx: InputContext,
-                                  data: object) -> MultiModalKwargs:
+                                  data: object) -> MultiModalInputs:
     """
-    This function is used to create the MultiModalKwargs for the Phi4MM 
+    This function is used to create the MultiModalInputs for the Phi4MM 
     (audio) model.
     Specifically, for audio, we extract the audio features from the sound 
     file and create pairs of audio features and audio embed lengths (the
@@ -1338,13 +1338,13 @@ def input_mapper_for_phi4mm_audio(ctx: InputContext,
         data (object): Audio data.
 
     Returns:
-        MultiModalKwargs: Multi-modal inputs.
+        MultiModalInputs: Multi-modal inputs.
     """
     if not isinstance(data, list):
         data = [data]
 
     if len(data) == 0:
-        return MultiModalKwargs()
+        return MultiModalInputs()
 
     audio_features = []
     for audio_input in data:
@@ -1365,7 +1365,7 @@ def input_mapper_for_phi4mm_audio(ctx: InputContext,
             [single_audio_embed_size],
         )
         audio_features.append(single_audio_feature_audio_len_pair)
-    return MultiModalKwargs({"audio_features": audio_features})
+    return MultiModalInputs({"audio_features": audio_features})
 
 
 def input_mapper_for_phi4mm_image(ctx: InputContext, data: object):
@@ -1373,7 +1373,7 @@ def input_mapper_for_phi4mm_image(ctx: InputContext, data: object):
         data = [data]
     # data: list of PIL images
     if len(data) == 0:
-        return MultiModalKwargs()
+        return MultiModalInputs()
     hf_config = ctx.get_hf_config()
     vision_encoder_name = hf_config.img_processor
     if vision_encoder_name is None:
@@ -1385,7 +1385,7 @@ def input_mapper_for_phi4mm_image(ctx: InputContext, data: object):
 
     image_input_dict = preprocess(data, dynamic_hd_size, vit_image_size,
                                   vit_patch_size)
-    return MultiModalKwargs({
+    return MultiModalInputs({
         "pixel_values":
         image_input_dict["pixel_values"],
         "image_sizes":

@@ -37,8 +37,8 @@ from vllm.transformers_utils.configs import (ChatGLMConfig, Cohere2Config,
                                              MLPSpeculatorConfig, MPTConfig,
                                              NemotronConfig, NVLM_D_Config,
                                              Olmo2Config, RWConfig,
-                                             SkyworkR1VChatConfig, SolarConfig,
-                                             Telechat2Config, UltravoxConfig)
+                                             SolarConfig, Telechat2Config,
+                                             UltravoxConfig)
 # yapf: enable
 from vllm.transformers_utils.utils import check_gguf_file
 from vllm.utils import resolve_obj_by_qualname
@@ -76,7 +76,6 @@ _CONFIG_REGISTRY: Dict[str, Type[PretrainedConfig]] = {
     "NVLM_D": NVLM_D_Config,
     "olmo2": Olmo2Config,
     "solar": SolarConfig,
-    "skywork_chat": SkyworkR1VChatConfig,
     "telechat": Telechat2Config,
     "ultravox": UltravoxConfig,
     **_CONFIG_REGISTRY_OVERRIDE_HF
@@ -262,11 +261,6 @@ def get_config(
                                      MISTRAL_CONFIG_NAME,
                                      revision=revision):
                 config_format = ConfigFormat.MISTRAL
-            else:
-                raise ValueError(
-                    "Could not detect config format for no config file found. "
-                    "Ensure your model has either config.json (HF format) "
-                    "or params.json (Mistral format).")
 
         except Exception as e:
             error_message = (
@@ -329,14 +323,7 @@ def get_config(
     elif config_format == ConfigFormat.MISTRAL:
         config = load_params_config(model, revision, token=HF_TOKEN, **kwargs)
     else:
-        supported_formats = [
-            fmt.value for fmt in ConfigFormat if fmt != ConfigFormat.AUTO
-        ]
-        raise ValueError(
-            f"Unsupported config format: {config_format}. "
-            f"Supported formats are: {', '.join(supported_formats)}. "
-            f"Ensure your model uses one of these configuration formats "
-            f"or specify the correct format explicitly.")
+        raise ValueError(f"Unsupported config format: {config_format}")
 
     # Special architecture mapping check for GGUF models
     if is_gguf:

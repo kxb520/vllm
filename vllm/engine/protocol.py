@@ -23,7 +23,7 @@ from vllm.utils import Device, collect_from_async_generator, random_uuid
 logger = init_logger(__name__)
 
 
-class EngineClient(ABC):
+class  EngineClient(ABC):
     """Protocol class for Clients to Engine"""
 
     @property
@@ -282,7 +282,7 @@ class EngineClient(ABC):
         ...
 
     @abstractmethod
-    async def wake_up(self, tags: Optional[list[str]] = None) -> None:
+    async def wake_up(self) -> None:
         """Wake up the engine"""
         ...
 

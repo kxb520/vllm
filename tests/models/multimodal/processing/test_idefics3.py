@@ -4,6 +4,7 @@ import pytest
 from transformers import Idefics3Config
 
 from vllm.multimodal import MULTIMODAL_REGISTRY
+from vllm.transformers_utils.tokenizer import cached_tokenizer_from_config
 
 from ....conftest import _ImageAssets
 from ...utils import build_model_context
@@ -28,7 +29,7 @@ def test_processor_override(
     num_imgs: int,
     kwargs_on_init: bool,
 ):
-    """Ensure Idefics3MultiModalProcessor handles num_crops properly."""
+    """Ensure input_processor_for_idefics3 handles num_crops properly."""
     # Same as the previous test - don't initialize mm_processor_kwargs
     # in this test and assume that the kwargs will be correctly expanded by
     # the partial when calling the custom input processor.
@@ -37,7 +38,11 @@ def test_processor_override(
         mm_processor_kwargs=mm_processor_kwargs if kwargs_on_init else None,
         limit_mm_per_prompt={"image": num_imgs},
     )
-    processor = MULTIMODAL_REGISTRY.create_processor(ctx.model_config)
+    tokenizer = cached_tokenizer_from_config(ctx.model_config)
+    processor = MULTIMODAL_REGISTRY.create_processor(
+        ctx.model_config,
+        tokenizer=tokenizer,
+    )
     hf_processor_mm_kwargs = {} if kwargs_on_init else mm_processor_kwargs
 
     # Build the image str / prompt based on the number of images we pass

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import multiprocessing
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from typing import TYPE_CHECKING, Optional
 
 from vllm.config import VllmConfig
@@ -57,13 +57,13 @@ class StructuredOutputManager:
                 raise ValueError(
                     f"Unsupported structured output backend: {backend_name}")
 
-        grammar = self.executor.submit(self._async_create_grammar, request)
+        grammar: Future[StructuredOutputGrammar] = self.executor.submit(
+            self._async_create_grammar, request, self.backend)
         request.structured_output_request.grammar = grammar  # type: ignore[assignment]
 
     def _async_create_grammar(
-        self,
-        request: Request,
-    ) -> StructuredOutputGrammar:
+            self, request: Request,
+            backend: StructuredOutputBackend) -> StructuredOutputGrammar:
         key = request.structured_output_request.structured_output_key  # type: ignore[union-attr]
 
         # Note that the request was validated in the engine core client,

@@ -4,8 +4,6 @@ import time
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Optional
 
-from vllm.v1.spec_decode.metrics import SpecDecodingStats
-
 if TYPE_CHECKING:
     from vllm.v1.engine import EngineCoreEvent, EngineCoreOutput, FinishReason
     from vllm.v1.engine.output_processor import RequestState
@@ -36,8 +34,6 @@ class SchedulerStats:
 
     prefix_cache_stats: PrefixCacheStats = field(
         default_factory=PrefixCacheStats)
-
-    spec_decoding_stats: Optional[SpecDecodingStats] = None
 
 
 @dataclass

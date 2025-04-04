@@ -875,8 +875,7 @@ class Florence2MultiModalProcessor(
     Florence2MultiModalProcessor,
     info=Florence2ProcessingInfo,
     dummy_inputs=Florence2DummyInputsBuilder)
-class Florence2ForConditionalGeneration(nn.Module, SupportsMultiModal,
-                                        SupportsV0Only):
+class Florence2ForConditionalGeneration(nn.Module, SupportsMultiModal):
 
     def __init__(self, *, vllm_config: VllmConfig, prefix: str = ""):
         super().__init__()

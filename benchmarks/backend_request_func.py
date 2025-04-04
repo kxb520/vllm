@@ -219,15 +219,7 @@ async def async_request_deepspeed_mii(
                 if response.status == 200:
                     parsed_resp = await response.json()
                     output.latency = time.perf_counter() - st
-                    if "choices" in parsed_resp:
-                        output.generated_text = parsed_resp["choices"][0][
-                            "text"]
-                    elif "text" in parsed_resp:
-                        output.generated_text = parsed_resp["text"][0]
-                    else:
-                        output.error = ("Unexpected response format: "
-                                        "neither 'choices' nor 'text' found")
-                        output.success = False
+                    output.generated_text = parsed_resp["text"][0]
                     output.success = True
                 else:
                     output.error = response.reason or ""

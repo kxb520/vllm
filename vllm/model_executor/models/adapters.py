@@ -99,17 +99,16 @@ def _create_pooling_model_cls(
                     mapper = WeightsMapper(orig_to_new_prefix={"model.": ""})
                     weights = mapper.apply(weights)
 
-                    loaded_params = self.model.load_weights(weights)
-                    loaded_params = {f"model.{name}" for name in loaded_params}
-                    return loaded_params
+                    self.model.load_weights(weights)
+                    return
 
             # For most other models
             if hasattr(orig_cls, "load_weights"):
-                return orig_cls.load_weights(self, weights)  # type: ignore
+                orig_cls.load_weights(self, weights)  # type: ignore
             # Fallback
             else:
                 loader = AutoWeightsLoader(self)
-                return loader.load_weights(weights)
+                loader.load_weights(weights)
 
     return ModelForPooling  # type: ignore
 

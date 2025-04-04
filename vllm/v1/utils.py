@@ -105,7 +105,7 @@ class BackgroundProcHandle:
         process_kwargs: dict[Any, Any],
     ):
         context = get_mp_context()
-        self.reader, writer = context.Pipe(duplex=False)
+        reader, writer = context.Pipe(duplex=False)
 
         assert ("ready_pipe" not in process_kwargs
                 and "input_path" not in process_kwargs
@@ -115,17 +115,14 @@ class BackgroundProcHandle:
         process_kwargs["output_path"] = output_path
 
         # Run busy loop in background process.
-        self.proc = context.Process(target=target_fn,
-                                    kwargs=process_kwargs,
-                                    name=process_name)
+        self.proc = context.Process(target=target_fn, kwargs=process_kwargs)
         self._finalizer = weakref.finalize(self, shutdown, self.proc,
                                            input_path, output_path)
         self.proc.start()
 
-    def wait_for_startup(self):
         # Wait for startup.
-        if self.reader.recv()["status"] != "READY":
-            raise RuntimeError(f"{self.proc.name} initialization failed. "
+        if reader.recv()["status"] != "READY":
+            raise RuntimeError(f"{process_name} initialization failed. "
                                "See root cause above.")
 
     def shutdown(self):

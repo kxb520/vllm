@@ -7,6 +7,7 @@ import torch
 from safetensors.torch import load_file
 from torch import nn
 
+from vllm import envs
 from vllm.config import LoRAConfig
 from vllm.lora.layers import (ColumnParallelLinearWithLoRA,
                               MergedColumnParallelLinearWithLoRA,
@@ -30,17 +31,6 @@ EMBEDDING_PADDING_MODULES = ["lm_head"]
 DEVICES = ([
     f"cuda:{i}" for i in range(1 if torch.cuda.device_count() == 1 else 2)
 ] if current_platform.is_cuda_alike() else ["cpu"])
-
-
-@pytest.fixture(scope="function", autouse=True)
-def use_v0_only(monkeypatch: pytest.MonkeyPatch):
-    """
-    Some tests depend on V0 internals. Since both V0 and V1 use the same
-    LoRAModelManager it is okay to just test V0.
-    """
-    with monkeypatch.context() as m:
-        m.setenv('VLLM_USE_V1', '0')
-        yield
 
 
 @pytest.mark.parametrize("device", DEVICES)
@@ -421,6 +411,7 @@ def test_lru_lora_model_manager(dist_init, dummy_model, device):
     assert manager.device == device
 
 
+@pytest.mark.skipif(envs.VLLM_USE_V1, reason="Test leverages V0 internals.")
 @pytest.mark.parametrize("device", DEVICES)
 def test_lru_cache_worker_adapter_manager(llama_2_7b_model_extra_embeddings,
                                           sql_lora_files, device):
@@ -500,6 +491,7 @@ def test_lru_cache_worker_adapter_manager(llama_2_7b_model_extra_embeddings,
             device)
 
 
+@pytest.mark.skipif(envs.VLLM_USE_V1, reason="Test leverages V0 internals.")
 @pytest.mark.parametrize("device", DEVICES)
 def test_worker_adapter_manager(llama_2_7b_model_extra_embeddings,
                                 sql_lora_files, device):
